@@ -12,7 +12,9 @@
 // - D_it: HxW matrix with an interpolated disparity for each pixel (sparse!)
 void disparity_interpolation(cv::Mat &G, cv::Mat &T, cv::Mat &O, parameters & param, cv::Mat &D_it){
 	
+#ifdef HPTSR_DEBUG
 	std::cout << "disparity_interpolation.cpp" << std::endl;
+#endif
 
 	// get image dimensions
 	int H = G.rows;
@@ -29,7 +31,7 @@ void disparity_interpolation(cv::Mat &G, cv::Mat &T, cv::Mat &O, parameters & pa
 		int idx_trig = G.at<int>(v,u);
 
 		// check if triangle exists
-		if(idx_trig != -1){
+		if(idx_trig >= 0){
 			// get plane parameters
 			float a = T.at<float>(0,idx_trig);
 			float b = T.at<float>(1,idx_trig);
@@ -37,8 +39,13 @@ void disparity_interpolation(cv::Mat &G, cv::Mat &T, cv::Mat &O, parameters & pa
 			float d = T.at<float>(3,idx_trig);
 
 			// interpolate disparity
-			D_it.at<float>(v,u) = (d - a*u - b*v) / c;			
+			float disp = (d - a*u - b*v) / c;
+			D_it.at<float>(v,u) = (disp>0) ? disp : 0;			
 		}
 	}
-
+	// std::cerr << "Disparity_interpolation fail points: " << fail_cnt << std::endl;
+	// double D_it_min, D_it_max;
+	// cv::minMaxIdx(D_it, &D_it_min, &D_it_max);
+	// std::cout << "D_it min value: " << D_it_min << std::endl;
+	// std::cout << "D_it max_value: " << D_it_max << std::endl;
 }

@@ -8,7 +8,9 @@ using namespace boost::posix_time;
 
 void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S){
 
+#ifdef HPTSR_DEBUG
 	std::cout << "sparse_stereo.cpp" << std::endl;
+#endif
 
 	// Sign input images
 	cv::Mat_<unsigned char> leftImg, rightImg;
@@ -47,12 +49,19 @@ void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S){
 	SparseStereo<CensusWindow<5>, short> stereo(maxDisp, 1, uniqueness, rectification, false, false, leftRightStep);
 
 	// Feature detectors for left and right image
-	// FeatureDetector* leftFeatureDetector = new ExtendedFAST(true, minThreshold, adaptivity, false, 2);			 
-	// FeatureDetector* rightFeatureDetector = new ExtendedFAST(false, minThreshold, adaptivity, false, 2);
+
+#if defined(CV_VERSION_EPOCH) && CV_VERSION_EPOCH==2
+	FeatureDetector* leftFeatureDetector = new ExtendedFAST(true, minThreshold, adaptivity, false, 2);			 
+	FeatureDetector* rightFeatureDetector = new ExtendedFAST(false, minThreshold, adaptivity, false, 2);
+#elif defined(CV_VERSION_MAJOR) && CV_VERSION_MAJOR==3
 	cv::Ptr<FastFeatureDetector> leftFeatureDetector = cv::FastFeatureDetector::create();			 
 	cv::Ptr<FastFeatureDetector> rightFeatureDetector = cv::FastFeatureDetector::create();
+#endif
 
+#ifdef HPTSR_DEBUG
 	ptime lastTime = microsec_clock::local_time();
+#endif
+
 	vector<SparseMatch> correspondences;
 
 	// Objects for storing final and intermediate results
@@ -90,12 +99,14 @@ void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S){
 		stereo.match(censusLeft, censusRight, keypointsLeft, keypointsRight, &correspondences);
 	}
 
+#ifdef HPTSR_DEBUG
 	// Print statistics
 	time_duration elapsed = (microsec_clock::local_time() - lastTime);
 	cout << "Time for 1x stereo matching: " << elapsed.total_microseconds()/1.0e6 << "s" << endl
 		<< "Features detected in left image: " << keypointsLeft.size() << endl
 		<< "Features detected in right image: " << keypointsRight.size() << endl
 		<< "Percentage of matched features: " << (100.0 * correspondences.size() / keypointsLeft.size()) << "%" << endl;
+#endif
 
 	// Save matched feature coordinates and corresponding disparity in an array 
 	// Back transformation into orginal frame

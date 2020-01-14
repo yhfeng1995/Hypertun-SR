@@ -2,7 +2,7 @@
 #define DELAUNAY_TRIANGULATION_HPP
 
 #include <opencv2/opencv.hpp>
-#include "../libs/triangulation/DelaunayTriangulation.h"
+#include "triangulation/DelaunayTriangulation.h"
 #include <iostream>
 #include <cmath>
 

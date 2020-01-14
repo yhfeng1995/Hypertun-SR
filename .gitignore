@@ -54,3 +54,8 @@ CTestTestfile.cmake
 
 # Visual Studio Code:
 .vscode/
+
+# my append
+build/
+bin/
+lib/

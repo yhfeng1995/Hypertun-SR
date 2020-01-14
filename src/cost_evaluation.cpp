@@ -33,7 +33,9 @@ void cost_evaluation(cv::Mat &I_l, cv::Mat &I_r,
 
 	// try with exfast census
 	//####################################
+#ifdef HPTSR_DEBUG
 	std::cout << "cost_evaluation.cpp census try" << std::endl;
+#endif
 
 	// define containers
 	cv::Mat_<unsigned char> leftImg, rightImg;

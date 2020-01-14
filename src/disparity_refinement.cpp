@@ -26,8 +26,9 @@ void disparity_refinement(cv::Mat &D_it, cv::Mat &C_it,
 							cv::Mat &C_g, cv::Mat &C_b,
 							parameters &param){
 
+#ifdef HPTSR_DEBUG
 	std::cout << "disparity_refinement.cpp" << std::endl;
-
+#endif
 
 	// loop over all high gradient pixels
 	for (int it = 0; it < param.nOfHiGradPix; it++){

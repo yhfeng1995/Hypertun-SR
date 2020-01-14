@@ -53,8 +53,8 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	param.n_iters = 2;
 	param.t_lo = 2.f/24; // placeholder, verify optimal value
 	param.t_hi = 21.f/24; // placeholder, verify optimal value
-	param.im_grad = 20;
-	param.t_epi = 0.3f;
+	param.im_grad = 30;
+	param.t_epi = 0*0.3f;
 	param.epi_window = 80;
 
 	// Load images with time estimation
@@ -91,7 +91,9 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	cv::Mat grad_l;
 
 	// Replacced with OpenCV Sobel implementation 
-	image_gradient(I_l_cb, grad_l, param);
+	cv::Mat O;
+	image_gradient(I_l_cb, grad_l, param, O, param.im_grad);
+	int highGradCount = O.rows;
 	// cv::Mat grad_l_x, grad_l_y, grad_l_x2, grad_l_y2;
 	// cv::Sobel(I_l_cb, grad_l_x, CV_32F, 1, 0);
 	// cv::Sobel(I_l_cb, grad_l_y, CV_32F, 0, 1);
@@ -106,20 +108,20 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	// gather high gradient pixels in Mat O with time calculation
 	lastTime = boost::posix_time::microsec_clock::local_time();
 
-	cv::Mat O = cv::Mat(0, 2, CV_32S);
-	int highGradCount = 0;
-	for (int vv = 0; vv < I_l_cb.rows; vv++){
-		for (int uu = 0; uu < I_l_cb.cols; uu++){
-			if(grad_l.at<uchar>(vv, uu) > param.im_grad){
-				cv::Mat pixel = cv::Mat(1, 2, CV_32S);
-				pixel.at<int>(0,0) = uu;
-				pixel.at<int>(0,1) = vv;
-				O.push_back(pixel);
+	// cv::Mat O = cv::Mat(0, 2, CV_32S);
+	// int highGradCount = 0;
+	// for (int vv = 0; vv < I_l_cb.rows; vv++){
+	// 	for (int uu = 0; uu < I_l_cb.cols; uu++){
+	// 		if(grad_l.at<uchar>(vv, uu) > param.im_grad){
+	// 			cv::Mat pixel = cv::Mat(1, 2, CV_32S);
+	// 			pixel.at<int>(0,0) = uu;
+	// 			pixel.at<int>(0,1) = vv;
+	// 			O.push_back(pixel);
 
-				highGradCount++;
-			}
-		}
-	}
+	// 			highGradCount++;
+	// 		}
+	// 	}
+	// }
 
 	// for (int vv = 0; vv < I_l_cb.rows; vv++){
 	// 	const uchar *p_grad = grad_l.ptr<uchar>(vv);
@@ -136,8 +138,8 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	param.nOfHiGradPix = highGradCount;
 	
 
-	elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
-	std::cout << std::setw(50) << std::left << "Elapsed Time for building the Mat O: " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
+	// elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
+	// std::cout << std::setw(50) << std::left << "Elapsed Time for building the Mat O: " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 
 	
 	std::cout << "Number of pixels with high gradient: " << param.nOfHiGradPix << std::endl;
@@ -189,11 +191,14 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	//showG(I_l, G, param, "G after delaunay");
 	
 	// set all support points in G to -1
+	lastTime = boost::posix_time::microsec_clock::local_time();
 	for (int j=0; j<S.rows; ++j){
 		int u = S.at<float>(j,0);
 		int v = S.at<float>(j,1);
 		G.at<int>(v,u) = -1;
 	}
+	elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
+	std::cout << std::setw(50) << std::left << "Elapsed Time for 'copy matrix': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 	
 	// show the grid from the delaunay triangulation
 	//showGrid(I_l_c, S, E, "Initial Delaunay");
@@ -234,12 +239,15 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 		cv::Mat C_dummy = cv::Mat(3, sz_g, CV_32F, cv::Scalar::all(0)); // dummy array
 		C_b = cv::Mat(3, sz_b, CV_32F, cv::Scalar::all(0));
 
+		lastTime = boost::posix_time::microsec_clock::local_time();
 		for (int vvv = 0; vvv < param.H_bar; vvv++){
 			for (int uuu = 0; uuu < param.W_bar; uuu++){
 				C_g.at<float>(vvv, uuu, 3) = param.t_lo;
 				C_b.at<float>(vvv, uuu, 2) = param.t_hi;
 			}
 		}
+		elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
+		std::cout << std::setw(50) << std::left << "Elapsed Time for 'copy matrix': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 
 
 		// execute 'disparity_refinement' with elapsed time estimation
@@ -263,12 +271,15 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 			elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 			std::cout << std::setw(50) << std::left << "Elapsed Time for 'delaunay_triangulation': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 
+			lastTime = boost::posix_time::microsec_clock::local_time();
 			// set all support points in G to -1
 			for (int j=0; j<S.rows; ++j){
 				int u = S.at<float>(j,0);
 				int v = S.at<float>(j,1);
 				G.at<int>(v,u) = -1;
 			}
+			elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
+			std::cout << std::setw(50) << std::left << "Elapsed Time for 'copy matrix': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 
 			// show matrix G
 			//showG(I_l, G, param, "G7");
@@ -308,6 +319,11 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	showGrid(I_l_c, S, E, "Final Delaunay");
 	//showSupportPts(I_l_c, S, "final Support Points");
 	showDisparity(I_l_c, D_f, "Final Disparity");
+	// cv::imshow("Df", D_f);
+	// double disp_min, disp_max;
+	// cv::minMaxIdx(D_f, &disp_min, &disp_max);
+	// std::cout << "D_f min value: " << disp_min << std::endl;
+	// std::cout << "D_f max value: " << disp_max << std::endl;
 	// calculate accuracy if correct dataset is given
 	if(statistics.acc_calc) computeAccuracy(D_f, filename_disp, statistics);
 	
@@ -421,7 +437,7 @@ void showDisparity(cv::Mat I_l, cv::Mat D_it, std::string str){
 					color = cv::Vec3b(0, scaledDisp*512, 255);
 				else color = cv::Vec3b(0, 255, (1-scaledDisp)*512);
 
-				if (scaledDisp != 0)
+				if (scaledDisp > 0 && scaledDisp < 1)
 				circle(disparity, point, 1, (cv::Scalar) color, 1);
 			}
 		}
@@ -460,15 +476,16 @@ void computeAccuracy(cv::Mat D_f, cv::String filename_disp, stats &statistics){
 
 	int D_gt_png_width = D_f.cols;
 	int D_gt_png_height = D_f.rows;
-	int offset_u = 5;
-	int offset_v = 2;
-	cv::Rect roi; // region of interest
-	roi.x = offset_u;
-	roi.y = offset_v;
-	roi.width = 1216;
-	roi.height = 368;
+	// int offset_u = 5;
+	// int offset_v = 2;
+	// cv::Rect roi; // region of interest
+	// roi.x = offset_u;
+	// roi.y = offset_v;
+	// roi.width = 1216;
+	// roi.height = 368;
 
-	cv::Mat D_gt_png_c = D_gt_png(roi);
+	// cv::Mat D_gt_png_c = D_gt_png(roi);
+	cv::Mat D_gt_png_c = D_gt_png;
 	float gt_value;
 
 	// initialize some parameters needed for calculation

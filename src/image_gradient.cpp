@@ -10,7 +10,7 @@
 // This function calculates for each pixel the value delta u and delta v (du, dv), using the
 // values of the pixels at u+-1 and v+-1. If the pixel lies at the border, the value of the border is used.
 // The resulting gradient is calculated by sqrt(du^2 + dv^2)
-void image_gradient (cv::Mat &image_in, cv::Mat &image_out, parameters &param){
+void image_gradient (cv::Mat &image_in, cv::Mat &image_out, parameters &param, cv::Mat &O, int grad_thres){
 
     // get image size
     int W = image_in.cols;
@@ -18,6 +18,8 @@ void image_gradient (cv::Mat &image_in, cv::Mat &image_out, parameters &param){
 
     //  prepare output
     image_out = cv::Mat(H, W, CV_8UC1);
+    cv::Mat allO = cv::Mat(image_in.cols*image_in.rows, 2, CV_32S);
+    int O_cnt = 0;
     // loop over image
     for (int u = 0; u < W; ++u){
         for (int v = 0; v < H; ++v){
@@ -58,6 +60,16 @@ void image_gradient (cv::Mat &image_in, cv::Mat &image_out, parameters &param){
 
             // write gradint
             image_out.at<uchar>(v, u) = grad;
+
+            // Update 0
+            if (grad > grad_thres)
+            {
+                allO.at<int>(O_cnt, 0) = u;
+                allO.at<int>(O_cnt, 1) = v;
+                O_cnt++;
+            }
         }
     }
+    // copy to ouput O
+    allO.rowRange(0, O_cnt).copyTo(O);
 }

@@ -31,8 +31,9 @@ void support_resampling(cv::Mat &C_g, cv::Mat &C_b,
 							cv::Mat &I_l, cv::Mat &I_r,
 							cv::Mat &census_l, cv::Mat &census_r){
 
+#ifdef HPTSR_DEBUG
 	std::cout << "support_resampling.cpp" << std::endl;
-
+#endif
 
 	// get number of points in C_b and C_g
 	int noBadPts = 0;
@@ -219,11 +220,12 @@ void support_resampling(cv::Mat &C_g, cv::Mat &C_b,
 	}
 	S_it = S_next; 
 
-
+#ifdef HPTSR_DEBUG
 	std::cout << X_length << " points stored for epi-search." << std::endl;
 	std::cout << S_add_length << " points stored directly as support points." << std::endl;
 	std::cout << epiLength << " points stored from the epi-search." << std::endl;
-
+	std::cout << S_next.rows << " Points stored for resampled support points" << std::endl;
+#endif
 }
 
 // Inputs:
