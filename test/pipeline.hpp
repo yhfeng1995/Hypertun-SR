@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include "stats.hpp"
 
-void pipeline(cv::String filename_left, cv::String filename_right, cv::String filename_disp, stats &statistics);
+void pipeline(cv::String filename_left, cv::String filename_right, cv::String filename_disp, Hypertun_SR::stats &statistics);
 
 
 

@@ -1,11 +1,14 @@
 #include "cost_evaluation.hpp"
-#include "sparsestereo/sparsestereo-inl.h"
-#include "sparsestereo/census-inl.h"
-#include "sparsestereo/censuswindow.h"
-#include "sparsestereo/imageconversion.h"
+#include "../ThirdParty/sparsestereo/sparsestereo-inl.h"
+#include "../ThirdParty/sparsestereo/census-inl.h"
+#include "../ThirdParty/sparsestereo/censuswindow.h"
+#include "../ThirdParty/sparsestereo/imageconversion.h"
 #include <iostream>
 #include <cassert>
 #include <bitset>
+
+namespace Hypertun_SR
+{
 
 // cost_evaluation:
 // inputs: 
@@ -163,3 +166,5 @@ void census (cv::Mat &paddedImg, int u_pad, int v_pad, std::bitset<24> &census){
 		}
 	}
 }
+
+}  // namespace Hypertun_SR

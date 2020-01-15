@@ -26,7 +26,7 @@ void line2(cv::Mat& img, const cv::Point& start, const cv::Point& end,
 void showGrid(cv::Mat I_l, cv::Mat S, cv::Mat E, std::string str);
 
 // header of 'showG'
-void showG (cv::Mat I_l, cv::Mat G, parameters param, std::string str);
+void showG (cv::Mat I_l, cv::Mat G, Hypertun_SR::parameters param, std::string str);
 
 // header of 'showDisparity'
 void showDisparity(cv::Mat I_l, cv::Mat D_it, std::string str);
@@ -36,10 +36,10 @@ void showDisparity(cv::Mat I_l, cv::Mat D_it, std::string str);
 void showSupportPts(cv::Mat I_l, cv::Mat S_it, std::string str);
 
 // header of ´computeAccuracy'
-void computeAccuracy(cv::Mat D_f, cv::String filename_disp, stats &statistics);
+void computeAccuracy(cv::Mat D_f, cv::String filename_disp, Hypertun_SR::stats &statistics);
 
 
-void pipeline(cv::String filename_left, cv::String filename_right, cv::String filename_disp, stats &statistics) {
+void pipeline(cv::String filename_left, cv::String filename_right, cv::String filename_disp, Hypertun_SR::stats &statistics) {
 	std::cout << "#######" << std::endl;
 	std::cout << "DATASET: http://www.cvlibs.net/datasets/kitti/eval_stereo_flow.php?benchmark=flow" << std::endl;
 	std::cout << "#######" << std::endl << std::endl;
@@ -48,7 +48,7 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	std::cout << std::setprecision(3);
 
 	//Load parameters
-	parameters param;
+	Hypertun_SR::parameters param;
 	param.sz_occ = 32;
 	param.n_iters = 2;
 	param.t_lo = 2.f/24; // placeholder, verify optimal value
@@ -87,12 +87,9 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	cv::GaussianBlur(I_l_c, I_l_cb, cv::Size(3,3), 0, 0, cv::BORDER_DEFAULT);
 
 
-	// Generate gradient image
-	cv::Mat grad_l;
-
 	// Replacced with OpenCV Sobel implementation 
 	cv::Mat O;
-	image_gradient(I_l_cb, grad_l, param, O, param.im_grad);
+	Hypertun_SR::image_gradient(I_l_cb, param, O);
 	int highGradCount = O.rows;
 	// cv::Mat grad_l_x, grad_l_y, grad_l_x2, grad_l_y2;
 	// cv::Sobel(I_l_cb, grad_l_x, CV_32F, 1, 0);
@@ -176,14 +173,14 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 
 	// execute 'sparse_stereo' with elapsed time estimation 
 	lastTime = boost::posix_time::microsec_clock::local_time();
-	sparse_stereo(I_l_c, I_r_c, S);
+	Hypertun_SR::sparse_stereo(I_l_c, I_r_c, S);
 	int num_S_points_init = S.rows;
 	elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 	std::cout << std::setw(50) << std::left << "Elapsed Time for 'sparse_stereo': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 
 	// execute 'delaunay_triangulation' with elapsed time estimation
 	lastTime = boost::posix_time::microsec_clock::local_time();
-	delaunay_triangulation(S, G, T, E);
+	Hypertun_SR::delaunay_triangulation(S, G, T, E);
 	elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 	std::cout << std::setw(50) << std::left << "Elapsed Time for 'delaunay_triangulation': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 
@@ -214,7 +211,7 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 
 		// execute 'disparity_interpolation' with elapsed time estimation
 		lastTime = boost::posix_time::microsec_clock::local_time();
-		disparity_interpolation(G, T, O, param, D_it);
+		Hypertun_SR::disparity_interpolation(G, T, O, param, D_it);
 		elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 		std::cout << std::setw(50) << std::left << "Elapsed Time for 'disparity_interpolation': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 		
@@ -236,7 +233,7 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 		int sz_b[] = {param.H_bar, param.W_bar, 3}; // dimension of C_b
 
 		C_g = cv::Mat(3, sz_g, CV_32F, cv::Scalar::all(0));
-		cv::Mat C_dummy = cv::Mat(3, sz_g, CV_32F, cv::Scalar::all(0)); // dummy array
+		// cv::Mat C_dummy = cv::Mat(3, sz_g, CV_32F, cv::Scalar::all(0)); // dummy array
 		C_b = cv::Mat(3, sz_b, CV_32F, cv::Scalar::all(0));
 
 		lastTime = boost::posix_time::microsec_clock::local_time();
@@ -252,7 +249,7 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 
 		// execute 'disparity_refinement' with elapsed time estimation
 		lastTime = boost::posix_time::microsec_clock::local_time();
-		disparity_refinement(D_it, C_it, G, O, D_f, C_f, C_g, C_b, param);
+		Hypertun_SR::disparity_refinement(D_it, C_it, G, O, D_f, C_f, C_g, C_b, param);
 		elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 		std::cout << std::setw(50) << std::left << "Elapsed Time for 'disparity_refinement': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 		
@@ -261,13 +258,13 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 
 			// execute 'support_resampling' with elapsed time estimation
 			lastTime = boost::posix_time::microsec_clock::local_time();
-			support_resampling(C_g, C_b, S, param, I_l_c, I_r_c, census_l, census_r);
+			Hypertun_SR::support_resampling(C_g, C_b, S, param, I_l_c, I_r_c, census_l, census_r);
 			elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 			std::cout << std::setw(50) << std::left << "Elapsed Time for 'support_resampling': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 		
 			// execute 'delaunay_triangulation' with elapsed time estimation
 			lastTime = boost::posix_time::microsec_clock::local_time();
-			delaunay_triangulation(S, G, T, E);
+			Hypertun_SR::delaunay_triangulation(S, G, T, E);
 			elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 			std::cout << std::setw(50) << std::left << "Elapsed Time for 'delaunay_triangulation': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 
@@ -390,7 +387,7 @@ void showGrid(cv::Mat I_l, cv::Mat S, cv::Mat E, std::string str){
 
 
 
-void showG (cv::Mat I_l, cv::Mat G, parameters param, std::string str){
+void showG (cv::Mat I_l, cv::Mat G, Hypertun_SR::parameters param, std::string str){
 
 	std::cout << "showG" << std::endl;
 	cv::Mat G_img = I_l.clone();
@@ -464,7 +461,7 @@ void showSupportPts(cv::Mat I_l, cv::Mat S_it, std::string str){
 
 
 
-void computeAccuracy(cv::Mat D_f, cv::String filename_disp, stats &statistics){
+void computeAccuracy(cv::Mat D_f, cv::String filename_disp, Hypertun_SR::stats &statistics){
 
 	if (filename_disp == " ") return;
 

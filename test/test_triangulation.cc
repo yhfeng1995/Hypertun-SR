@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 #include <opencv2/opencv.hpp>
-#include "triangulation/DelaunayTriangulation.h"
+#include "../ThirdParty/triangulation/DelaunayTriangulation.h"
 
 int main(int argc, char **argv)
 {

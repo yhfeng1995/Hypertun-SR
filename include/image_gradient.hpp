@@ -4,6 +4,10 @@
 #include <opencv2/core/core.hpp>
 #include "parameters.hpp"
 
-void image_gradient(cv::Mat &image_in, cv::Mat &image_out, parameters &param, cv::Mat &O, int grad_thres);
+namespace Hypertun_SR
+{
+    void image_gradient(cv::Mat &image_in, parameters &param, cv::Mat &O);
+}  // namespace Hypertun_SR
+
 
 #endif //IMAGE_GRADIENT_HPP

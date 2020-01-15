@@ -1,6 +1,9 @@
 #ifndef PARAMETERS_HPP
 #define PARAMETERS_HPP
 
+namespace Hypertun_SR
+{
+
 struct parameters {
 	// Occupancy grid size used for re-sampling
 	int sz_occ;
@@ -31,5 +34,8 @@ struct parameters {
 	// window size for epipolar serch
 	int epi_window;
 };
+
+}  // namespace Hypertun_SR
+
 
 #endif // PARAMETERS_HPP

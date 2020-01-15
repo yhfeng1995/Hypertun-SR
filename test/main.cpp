@@ -60,7 +60,7 @@ int main() {
 	}
 
 	// create instance of stats
-	stats statistics;
+	Hypertun_SR::stats statistics;
 	if(DATASET == ACCURACY_DATASET) statistics.acc_calc = true;
 	else statistics.acc_calc = false;
 

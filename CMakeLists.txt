@@ -3,7 +3,7 @@ project( Hypertun_SR )
 
 set(CMAKE_BUILD_TYPE "Release")
 # set(CMAKE_CXX_FLAGS " -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse --std=c++11")
-set(CMAKE_CXX_FLAGS "-O3 -fopenmp -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse --std=c++11")
+set(CMAKE_CXX_FLAGS "-fPIC -O3 -fopenmp -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse --std=c++11")
 
 find_package( OpenCV 3 REQUIRED )
 if (OpenCV_FOUND)
@@ -12,7 +12,6 @@ endif()
 
 include_directories(
 	${PROJECT_SOURCE_DIR}/include
-	${PROJECT_SOURCE_DIR}/ThirdParty
 	${OpenCV_INCLUDE_DIRS}
 )
 

@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+namespace Hypertun_SR
+{
+	
 float sign (cv::Point3f p1, cv::Point3f p2, cv::Point3f p3) {
     return (p1.y - p3.y) * (p2.x - p3.x) - (p2.y - p3.y) * (p1.x - p3.x);
 }
@@ -304,3 +307,5 @@ void delaunay_triangulation(cv::Mat &S, cv::Mat &G, cv::Mat &T, cv::Mat &E){
     free(out.neighborlist);
     free(out.edgelist);
 }
+
+} // namespace Hypertun_SR

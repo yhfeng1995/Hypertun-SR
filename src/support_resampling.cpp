@@ -1,9 +1,12 @@
 #include "support_resampling.hpp"
-#include "sparsestereo/sparsestereo-inl.h"
-#include "sparsestereo/census-inl.h"
-#include "sparsestereo/censuswindow.h"
-#include "sparsestereo/imageconversion.h"
+#include "../ThirdParty/sparsestereo/sparsestereo-inl.h"
+#include "../ThirdParty/sparsestereo/census-inl.h"
+#include "../ThirdParty/sparsestereo/censuswindow.h"
+#include "../ThirdParty/sparsestereo/imageconversion.h"
 #include <iostream>
+
+namespace Hypertun_SR
+{
 
 void showMatch (cv::Mat &I_l, cv::Mat &I_r, cv::Mat &S_epi, int epiL);
 
@@ -341,3 +344,5 @@ void showMatch (cv::Mat &I_l, cv::Mat &I_r, cv::Mat &S_epi, int epiL){
 	//cv::waitKey(0);
 
 }
+
+}  // namespace Hypertun_SR

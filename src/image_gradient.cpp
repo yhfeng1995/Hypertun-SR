@@ -1,23 +1,24 @@
 #include "image_gradient.hpp"
 
+namespace Hypertun_SR
+{
+    
 // image_gradient
 //##########################################
 //
 // input:
 // - image_in       : grayscale image [H, W]
-// - image_out      : gradient image [H, W]
 //
 // This function calculates for each pixel the value delta u and delta v (du, dv), using the
 // values of the pixels at u+-1 and v+-1. If the pixel lies at the border, the value of the border is used.
 // The resulting gradient is calculated by sqrt(du^2 + dv^2)
-void image_gradient (cv::Mat &image_in, cv::Mat &image_out, parameters &param, cv::Mat &O, int grad_thres){
+void image_gradient (cv::Mat &image_in, parameters &param, cv::Mat &O){
 
     // get image size
     int W = image_in.cols;
     int H = image_in.rows;
 
     //  prepare output
-    image_out = cv::Mat(H, W, CV_8UC1);
     cv::Mat allO = cv::Mat(image_in.cols*image_in.rows, 2, CV_32S);
     int O_cnt = 0;
     // loop over image
@@ -58,11 +59,8 @@ void image_gradient (cv::Mat &image_in, cv::Mat &image_out, parameters &param, c
             // combine gradients
             int grad = std::sqrt(std::pow(du, 2) + std::pow(dv, 2));
 
-            // write gradint
-            image_out.at<uchar>(v, u) = grad;
-
             // Update 0
-            if (grad > grad_thres)
+            if (grad > param.im_grad)
             {
                 allO.at<int>(O_cnt, 0) = u;
                 allO.at<int>(O_cnt, 1) = v;
@@ -73,3 +71,5 @@ void image_gradient (cv::Mat &image_in, cv::Mat &image_out, parameters &param, c
     // copy to ouput O
     allO.rowRange(0, O_cnt).copyTo(O);
 }
+
+} // namespace Hypertun_SR

@@ -7,14 +7,17 @@
 #include <vector>
 #include <omp.h>
 
-#include "sparsestereo/exception.h"
-#include "sparsestereo/extendedfast.h"
-#include "sparsestereo/stereorectification.h"
-#include "sparsestereo/sparsestereo-inl.h"
-#include "sparsestereo/census-inl.h"
-#include "sparsestereo/imageconversion.h"
-#include "sparsestereo/censuswindow.h"
+#include "../ThirdParty/sparsestereo/exception.h"
+#include "../ThirdParty/sparsestereo/extendedfast.h"
+#include "../ThirdParty/sparsestereo/stereorectification.h"
+#include "../ThirdParty/sparsestereo/sparsestereo-inl.h"
+#include "../ThirdParty/sparsestereo/census-inl.h"
+#include "../ThirdParty/sparsestereo/imageconversion.h"
+#include "../ThirdParty/sparsestereo/censuswindow.h"
 
-void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S);
+namespace Hypertun_SR
+{
+    void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S);
+}
 
 #endif // SPARSE_STEREO_HPP

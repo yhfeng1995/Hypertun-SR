@@ -2,6 +2,8 @@
 #include <cassert>
 #include <iostream>
 
+namespace Hypertun_SR
+{
 
 // inputs:
 // - G   : HxW Matrix with an index for each pixel to the corresponding triangle
@@ -49,3 +51,5 @@ void disparity_interpolation(cv::Mat &G, cv::Mat &T, cv::Mat &O, parameters & pa
 	// std::cout << "D_it min value: " << D_it_min << std::endl;
 	// std::cout << "D_it max_value: " << D_it_max << std::endl;
 }
+
+}  // namespace Hypertun_SR

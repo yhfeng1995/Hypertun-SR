@@ -1,8 +1,10 @@
 #ifndef STATS_HPP
 #define STATS_HPP
 
-struct stats {
+namespace Hypertun_SR
+{
 
+struct stats {
     // flag for accuracy calculation
     bool acc_calc;
 
@@ -22,5 +24,8 @@ struct stats {
     float acc5;
 
 };
+
+}  // namespace Hypertun_SR
+
 
 #endif // STATS_HPP

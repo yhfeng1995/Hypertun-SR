@@ -1,6 +1,9 @@
 #include "disparity_refinement.hpp"
 #include <iostream>
 
+namespace Hypertun_SR
+{
+	
 // disparity refinement:
 // inputs:
 // -D_it : Interpolated disparity [H x W]
@@ -80,3 +83,6 @@ void disparity_refinement(cv::Mat &D_it, cv::Mat &C_it,
 	}
 
 }
+
+} // namespace Hypertun_SR
+
