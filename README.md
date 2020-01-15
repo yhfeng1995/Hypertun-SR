@@ -45,3 +45,11 @@ However, since we focus more on the efficiency, the accuracy is still lower than
 - Extracting high gradient pixels and preserving the coordinates simultaneously.
 
 - Using [Scanline Algorithm](http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html#algo2) to allocate triangulates' indexs to all pixels.
+
+## TODO
+
+We haven't make improvements to the accuracy of this repo, so there still remain a great gap between the results provided by the paper and by the implementation.
+
+Currently this repo's results is as follow: 
+
+![](./paper/result.png)
