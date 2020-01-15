@@ -50,7 +50,7 @@ CTestTestfile.cmake
 *.DS_Store
 
 # Data Images
-*.png
+# *.png
 
 # Visual Studio Code:
 .vscode/
