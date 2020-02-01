@@ -24,3 +24,4 @@ add_library(sparsestereo
 	census-inl.h
 	census.cpp
 )
+target_link_libraries(sparsestereo ${OpenCV_LIBS})

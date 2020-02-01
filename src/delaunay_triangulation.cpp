@@ -156,7 +156,7 @@ void delaunay_triangulation(cv::Mat &S, cv::Mat &G, cv::Mat &T, cv::Mat &E){
 
 	struct triangulateio in, out;
 	in.numberofpoints = static_cast<int>(N);
-	in.pointlist = (float*)malloc(in.numberofpoints * 2 * sizeof(float));
+	in.pointlist = (double*)malloc(in.numberofpoints * 2 * sizeof(double));
 
 	cv::Point3f pts[N];
 	int dummy_array[N];

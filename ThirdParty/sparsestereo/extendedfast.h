@@ -25,9 +25,9 @@ namespace sparsestereo {
 			
 	protected:
 		// Implements the feature detector interface
-		virtual void detectImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const cv::Mat& mask=cv::Mat()) const {
+		CV_WRAP void detect(cv::InputArray image, CV_OUT std::vector<cv::KeyPoint>& keypoints, cv::InputArray mask=cv::noArray() ) override {
 			// OpenCV tries to force this method to be const, but we don't like that!
-			const_cast<ExtendedFAST*>(this)->detectImpl(image, keypoints, mask);
+			const_cast<ExtendedFAST*>(this)->detectImpl(image.getMat(), keypoints, mask.getMat());
 		}
 		void detectImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const cv::Mat& mask=cv::Mat());
 	

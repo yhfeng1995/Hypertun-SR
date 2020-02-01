@@ -10,7 +10,7 @@ Thanks Sudeep Pillai, Johann Diep and everyone who have make effect to this algo
 
 ## Requirements
 
- - **OpenCV 2.4.13/3.3.0** (Original repo using 2.4.13 but I haven't install this version, exFast library cannot be called successfully due to the change of `cv::FeatureDetector` interface in OpenCV3, so I use default FAST feature detector in OpenCV as replacement. For Feature-based stereo SLAM system, you can also use the match provided in Frame construction. )
+ - **OpenCV 2.4.13+** ( We have modified exFAST's interface to fit OpenCV 3.X. Additionally, we currently NOT recommend replacing exFAST/FAST with ORB feature detector in ORB_SLAM2 after testing. )
 
  - boost (tested with 1.58.0.1)
 
@@ -30,7 +30,7 @@ These two datasets can be toggled by changing the variable `int DATASET` in the 
 The code was already build on Ubuntu 16.04 using cmake. To run the pipeline use the executable located at `test/bin/main.out`.
 
 To build the code again, navigate into the project source folder and use:
-`cmake .`
+`cmake ..`
 and then
 `make`
 
@@ -38,18 +38,21 @@ and then
 
 The efficiency of the original repo has great room for improvement. We implement several changes to accelerate the pipeline. 
 
-The original repo running at 16Hz with 2 iterations (in [Report](./paper/3DVision_Report_Group3.pdf)), we have improved it up to around 30Hz, which is close to the data provided by original paper (34Hz).
+The original repo running at 16Hz with 2 iterations (in [Report](./paper/3DVision_Report_Group3.pdf)), ~~we have improved it up to around 30Hz, which is close to the data provided by original paper (34Hz).~~
 
-However, since we focus more on the efficiency, the accuracy is still lower than the original paper present, same as original repo.
+~~However, since we focus more on the efficiency, the accuracy is still lower than the original paper present, same as original repo.~~
 
 - Extracting high gradient pixels and preserving the coordinates simultaneously.
 
 - Using [Scanline Algorithm](http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html#algo2) to allocate triangulates' indexs to all pixels.
 
-## TODO
 
-We haven't make improvements to the accuracy of this repo, so there still remain a great gap between the results provided by the paper and by the implementation.
+## Accuracy Improvements (TODO)
 
-Currently this repo's results is as follow: 
+This part is still not so prefect, currently I can only improve the accuracy mainly by finetuning the parameters and with the sacrifice of efficiency. 
 
-![](./paper/result.png)
+Currently the frequency has dropped from **30+Hz (on my desktop) to 26Hz (on my laptop), 34Hz in Report** and the accuracy (disp<3pix) has raised from **75.8% to 85.1%, 90.2% in Report**. For more info please refer to [CHANGELOG](./CHANGELOG.md)
+
+Currently this repo's results are as follow (ON MY LAPTOP): 
+
+![](./paper/2020-02-01_result.png)

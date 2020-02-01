@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <cassert>
+#include <utility>
 
 #include "sparse_stereo.hpp"
 #include "delaunay_triangulation.hpp"
@@ -23,20 +24,23 @@
 void line2(cv::Mat& img, const cv::Point& start, const cv::Point& end, 
                      const cv::Scalar& c1,   const cv::Scalar& c2);
 // header of 'showGrid'
-void showGrid(cv::Mat I_l, cv::Mat S, cv::Mat E, std::string str);
+void showGrid(cv::Mat I_l, cv::Mat S, cv::Mat E, std::string str, 
+			  const std::vector<std::pair<cv::Point, float> > &v_err=std::vector<std::pair<cv::Point, float> >());
 
 // header of 'showG'
 void showG (cv::Mat I_l, cv::Mat G, Hypertun_SR::parameters param, std::string str);
 
 // header of 'showDisparity'
-void showDisparity(cv::Mat I_l, cv::Mat D_it, std::string str);
+void showDisparity(cv::Mat I_l, cv::Mat D_it, std::string str, 
+                   const std::vector<std::pair<cv::Point, float> > &v_err=std::vector<std::pair<cv::Point, float> >());
 
 
 // header of 'showSupportPts'
 void showSupportPts(cv::Mat I_l, cv::Mat S_it, std::string str);
 
 // header of ´computeAccuracy'
-void computeAccuracy(cv::Mat D_f, cv::String filename_disp, Hypertun_SR::stats &statistics);
+void computeAccuracy(cv::Mat D_f, cv::String filename_disp, Hypertun_SR::stats &statistics, 
+                     std::vector<std::pair<cv::Point, float> > &v_err);
 
 
 void pipeline(cv::String filename_left, cv::String filename_right, cv::String filename_disp, Hypertun_SR::stats &statistics) {
@@ -53,7 +57,7 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	param.n_iters = 2;
 	param.t_lo = 2.f/24; // placeholder, verify optimal value
 	param.t_hi = 21.f/24; // placeholder, verify optimal value
-	param.im_grad = 30;
+	param.im_grad = 60;
 	param.t_epi = 0*0.3f;
 	param.epi_window = 80;
 
@@ -88,16 +92,14 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 
 
 	// Replacced with OpenCV Sobel implementation 
-	cv::Mat O;
-	Hypertun_SR::image_gradient(I_l_cb, param, O);
-	int highGradCount = O.rows;
-	// cv::Mat grad_l_x, grad_l_y, grad_l_x2, grad_l_y2;
-	// cv::Sobel(I_l_cb, grad_l_x, CV_32F, 1, 0);
-	// cv::Sobel(I_l_cb, grad_l_y, CV_32F, 0, 1);
-	// cv::pow(grad_l_x, 2, grad_l_x2);
-	// cv::pow(grad_l_y, 2, grad_l_y2);
-	// cv::sqrt(grad_l_x2+grad_l_y2, grad_l);
-	// cv::convertScaleAbs(grad_l, grad_l);
+	// cv::Mat O;
+	// Hypertun_SR::image_gradient(I_l_cb, param, O);
+	// int highGradCount = O.rows;
+
+	cv::Mat grad_l, grad_l_x, grad_l_y, grad_l_x2, grad_l_y2;
+	cv::Sobel(I_l_c, grad_l, CV_32F, 1, 1);
+	// cv::Laplacian(I_l_cb, grad_l, CV_32F, 3);
+	cv::convertScaleAbs(grad_l, grad_l);
 
 	elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 	std::cout << std::setw(50) << std::left << "Elapsed Time for image preprocessing: " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
@@ -105,20 +107,20 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	// gather high gradient pixels in Mat O with time calculation
 	lastTime = boost::posix_time::microsec_clock::local_time();
 
-	// cv::Mat O = cv::Mat(0, 2, CV_32S);
-	// int highGradCount = 0;
-	// for (int vv = 0; vv < I_l_cb.rows; vv++){
-	// 	for (int uu = 0; uu < I_l_cb.cols; uu++){
-	// 		if(grad_l.at<uchar>(vv, uu) > param.im_grad){
-	// 			cv::Mat pixel = cv::Mat(1, 2, CV_32S);
-	// 			pixel.at<int>(0,0) = uu;
-	// 			pixel.at<int>(0,1) = vv;
-	// 			O.push_back(pixel);
+	cv::Mat O = cv::Mat(0, 2, CV_32S);
+	int highGradCount = 0;
+	for (int vv = 0; vv < I_l_c.rows; vv++){
+		for (int uu = 0; uu < I_l_c.cols; uu++){
+			if(grad_l.at<uchar>(vv, uu) > param.im_grad){
+				cv::Mat pixel = cv::Mat(1, 2, CV_32S);
+				pixel.at<int>(0,0) = uu;
+				pixel.at<int>(0,1) = vv;
+				O.push_back(pixel);
 
-	// 			highGradCount++;
-	// 		}
-	// 	}
-	// }
+				highGradCount++;
+			}
+		}
+	}
 
 	// for (int vv = 0; vv < I_l_cb.rows; vv++){
 	// 	const uchar *p_grad = grad_l.ptr<uchar>(vv);
@@ -173,7 +175,7 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 
 	// execute 'sparse_stereo' with elapsed time estimation 
 	lastTime = boost::posix_time::microsec_clock::local_time();
-	Hypertun_SR::sparse_stereo(I_l_c, I_r_c, S);
+	Hypertun_SR::sparse_stereo(I_l_c, I_r_c, S, census_l, census_r);
 	int num_S_points_init = S.rows;
 	elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 	std::cout << std::setw(50) << std::left << "Elapsed Time for 'sparse_stereo': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
@@ -199,8 +201,9 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	
 	// show the grid from the delaunay triangulation
 	//showGrid(I_l_c, S, E, "Initial Delaunay");
+	std::vector<std::pair<cv::Point, float> > vec_Cb;
 
-	for (int i = 0; i < param.n_iters; ++i) {
+	for (int i = 1; i <= param.n_iters; ++i) {
 		std::cout << "################################################" << std::endl;
 		std::cout << "ITERATION :: " << i+1 << std::endl;
 		std::cout << "################################################" << std::endl;
@@ -253,6 +256,12 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 		elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
 		std::cout << std::setw(50) << std::left << "Elapsed Time for 'disparity_refinement': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
 		
+		vec_Cb.clear();
+		for (int i=0; i<param.H_bar; i++)
+			for (int j=0; j<param.W_bar; j++)
+				if (C_b.at<float>(i,j,2) > param.t_hi)
+					vec_Cb.emplace_back(cv::Point(C_b.at<float>(i,j,0), C_b.at<float>(i,j,1)), 0.0);
+
 		// Prepare for next iteration, if not last iteration
 		if (i != param.n_iters) {
 
@@ -313,17 +322,18 @@ void pipeline(cv::String filename_left, cv::String filename_right, cv::String fi
 	std::cout << "POINTS WITH DISPARITY: " << num_points;
 	std:: cout << ", " << float(num_points)/(I_l.rows*I_l.cols)*100 << "% of image" << std::endl;
 
-	showGrid(I_l_c, S, E, "Final Delaunay");
-	//showSupportPts(I_l_c, S, "final Support Points");
-	showDisparity(I_l_c, D_f, "Final Disparity");
 	// cv::imshow("Df", D_f);
-	// double disp_min, disp_max;
-	// cv::minMaxIdx(D_f, &disp_min, &disp_max);
-	// std::cout << "D_f min value: " << disp_min << std::endl;
-	// std::cout << "D_f max value: " << disp_max << std::endl;
+	double disp_min, disp_max;
+	cv::minMaxIdx(D_f, &disp_min, &disp_max);
+	std::cout << "D_f min value: " << disp_min << std::endl;
+	std::cout << "D_f max value: " << disp_max << std::endl;
 	// calculate accuracy if correct dataset is given
-	if(statistics.acc_calc) computeAccuracy(D_f, filename_disp, statistics);
-	
+	std::vector<std::pair<cv::Point, float> > v_errs;
+	if(statistics.acc_calc) computeAccuracy(D_f, filename_disp, statistics, v_errs);
+	// visualization
+	showGrid(I_l_c, S, E, "Final Delaunay", vec_Cb);
+	//showSupportPts(I_l_c, S, "final Support Points");
+	showDisparity(I_l_c, D_f, "Final Disparity", v_errs);
 
 	// fill stats struct as output to main
 	statistics.alg_time = algorithm_time_elapsed.total_microseconds()/1.0e3;
@@ -349,7 +359,8 @@ void line2(cv::Mat& img, const cv::Point& start, const cv::Point& end,
 
 
 
-void showGrid(cv::Mat I_l, cv::Mat S, cv::Mat E, std::string str){
+void showGrid(cv::Mat I_l, cv::Mat S, cv::Mat E, std::string str, 
+              const std::vector<std::pair<cv::Point, float> > &v_err){
 	// Draw Triangles and display image
 	cv::Mat I_triangles = I_l.clone();
 	cv::cvtColor(I_triangles, I_triangles, CV_GRAY2RGB);
@@ -382,6 +393,8 @@ void showGrid(cv::Mat I_l, cv::Mat S, cv::Mat E, std::string str){
 		line2(I_triangles, p1, p2, (cv::Scalar) color1, (cv::Scalar) color2);
 		//std::cout << "drew line: " << i1 << ", " << i2 << std::endl;
 	}
+    for (size_t i=0; i<v_err.size(); i++)
+        cv::circle(I_triangles, v_err[i].first, 3, cv::Scalar(255, 0, 0), -1);
 	cv::imshow(str, I_triangles);
 }
 
@@ -417,28 +430,44 @@ void showG (cv::Mat I_l, cv::Mat G, Hypertun_SR::parameters param, std::string s
 }
 
 
-void showDisparity(cv::Mat I_l, cv::Mat D_it, std::string str){
+void showDisparity(cv::Mat I_l, cv::Mat D_it, std::string str,
+			       const std::vector<std::pair<cv::Point, float> > &v_err){
 		cv::Mat disparity = I_l.clone();
 		cv::cvtColor(disparity, disparity, CV_GRAY2RGB);
 		cv::Mat normalized;
 		normalize(D_it.clone(), normalized, 0, 256, CV_MINMAX, CV_32F);
-
+		// search middle point
+		cv::Mat hist;
+		int channel = 0;
+		int histSize = 255;
+		float midRanges[] = { 0, 256 };  
+		const float *ranges[] = { midRanges };
+		cv::calcHist(&normalized, 1, &channel, cv::Mat(), hist, 1, &histSize, ranges);
+		int allCnt = normalized.rows * normalized.cols;
+		int midCnt = 0;
+		int midIdx = 0;
+		for (; midIdx<256; midIdx++)
+		{
+			if ( (midCnt+=hist.at<float>(midIdx)) > allCnt/2 )
+				break;
+		}
 		for (int x = 0; x < I_l.rows; ++x){
 			for (int y = 0; y < I_l.cols; ++y){
-				float scaledDisp = normalized.at<float>(x,y)/255.0;
+				float currDisp = normalized.at<float>(x,y);
 				cv::Vec3b color;
 				cv::Point point;
 				point.x = y;
 				point.y = x;
-				if(scaledDisp < 0.5)
-					color = cv::Vec3b(0, scaledDisp*512, 255);
-				else color = cv::Vec3b(0, 255, (1-scaledDisp)*512);
+				if(currDisp < midCnt)
+					color = cv::Vec3b(0, currDisp/midCnt*255, 255);
+				else color = cv::Vec3b(0, 255, (255-currDisp)/(255-midCnt)*255);
 
-				if (scaledDisp > 0 && scaledDisp < 1)
+				if (currDisp > 0 && currDisp < 256)
 				circle(disparity, point, 1, (cv::Scalar) color, 1);
 			}
 		}
-
+        for (size_t i=0; i<v_err.size(); i++)
+            cv::circle(disparity, v_err[i].first, 1, cv::Scalar(255, 0, 0));
 		cv::imshow(str, disparity);
 }
 
@@ -461,7 +490,7 @@ void showSupportPts(cv::Mat I_l, cv::Mat S_it, std::string str){
 
 
 
-void computeAccuracy(cv::Mat D_f, cv::String filename_disp, Hypertun_SR::stats &statistics){
+void computeAccuracy(cv::Mat D_f, cv::String filename_disp, Hypertun_SR::stats &statistics, std::vector<std::pair<cv::Point, float> > &v_err){
 
 	if (filename_disp == " ") return;
 
@@ -473,16 +502,16 @@ void computeAccuracy(cv::Mat D_f, cv::String filename_disp, Hypertun_SR::stats &
 
 	int D_gt_png_width = D_f.cols;
 	int D_gt_png_height = D_f.rows;
-	// int offset_u = 5;
-	// int offset_v = 2;
-	// cv::Rect roi; // region of interest
-	// roi.x = offset_u;
-	// roi.y = offset_v;
-	// roi.width = 1216;
-	// roi.height = 368;
+	int offset_u = 5;
+	int offset_v = 2;
+	cv::Rect roi; // region of interest
+	roi.x = offset_u;
+	roi.y = offset_v;
+	roi.width = 1216;
+	roi.height = 368;
 
 	// cv::Mat D_gt_png_c = D_gt_png(roi);
-	cv::Mat D_gt_png_c = D_gt_png;
+	cv::Mat D_gt_png_c = D_gt_png(roi);
 	float gt_value;
 
 	// initialize some parameters needed for calculation
@@ -505,14 +534,17 @@ void computeAccuracy(cv::Mat D_f, cv::String filename_disp, Hypertun_SR::stats &
 			if (D_f.at<float>(v,u) != 0 && gt_value != 0) { // both ground-truth and estimate disparity valid
 				n_loops = n_loops + 1;	
 				// ground-truth disparity computed by dividing pixel value by 256 
-				if (abs(D_f.at<float>(v,u)-gt_value/256.0) < threshold_5)  
+				float err = abs(D_f.at<float>(v,u)-gt_value/256.0);
+				if (err < threshold_5)  
 					counter_5 = counter_5 + 1;
-					if (abs(D_f.at<float>(v,u)-gt_value/256.0) < threshold_4)
+					if (err < threshold_4)
 						counter_4 = counter_4 + 1;
-						if (abs(D_f.at<float>(v,u)-gt_value/256.0) < threshold_3)
+						if (err < threshold_3)
 							counter_3 = counter_3 + 1;
-							if (abs(D_f.at<float>(v,u)-gt_value/256.0) < threshold_2)
+							if (err < threshold_2)
 								counter_2 = counter_2 + 1;
+				if (err > threshold_3)
+					v_err.emplace_back(cv::Point(u, v), err);
 			}
 		}
 	}

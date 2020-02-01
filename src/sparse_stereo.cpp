@@ -9,7 +9,7 @@ using namespace boost::posix_time;
 namespace Hypertun_SR
 {
 
-void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S){
+void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S, cv::Mat &census_l, cv::Mat &census_r){
 
 #ifdef HPTSR_DEBUG
 	std::cout << "sparse_stereo.cpp" << std::endl;
@@ -21,13 +21,13 @@ void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S){
 	rightImg=I_r;
 	
 	// Stereo matching parameters
-	double uniqueness = 0.4;
+	double uniqueness = 0.6;
 	int maxDisp = 70;
 	int leftRightStep = 2;
 
 	// Feature detection parameters
-	double adaptivity = 1.0;
-	int minThreshold = 10;
+	double adaptivity = 0.3;
+	int minThreshold = 15;
 
 	// Determine the height and width
 	int original_height=leftImg.rows;
@@ -36,12 +36,16 @@ void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S){
 	// the standard image size for exFAST
 	int new_width=640;
 	int new_height=480;
+	// int new_width=1216;
+	// int new_height=368;
 	Size size(new_width,new_height);
 
 	// Resize the input images to the standard image size
 	cv::Mat_<unsigned char> leftImg_resize, rightImg_resize;
 	resize(leftImg, leftImg_resize, size);
 	resize(rightImg, rightImg_resize, size);
+	// leftImg_resize = I_l;
+	// rightImg_resize = I_r;
 
 	// no rectification data in case of KITTI dataset
 	StereoRectification* rectification = NULL;
@@ -53,13 +57,13 @@ void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S){
 
 	// Feature detectors for left and right image
 
-#if defined(CV_VERSION_EPOCH) && CV_VERSION_EPOCH==2
+// #if defined(CV_VERSION_EPOCH) && CV_VERSION_EPOCH==2
 	FeatureDetector* leftFeatureDetector = new ExtendedFAST(true, minThreshold, adaptivity, false, 2);			 
 	FeatureDetector* rightFeatureDetector = new ExtendedFAST(false, minThreshold, adaptivity, false, 2);
-#elif defined(CV_VERSION_MAJOR) && CV_VERSION_MAJOR==3
-	cv::Ptr<FastFeatureDetector> leftFeatureDetector = cv::FastFeatureDetector::create();			 
-	cv::Ptr<FastFeatureDetector> rightFeatureDetector = cv::FastFeatureDetector::create();
-#endif
+// #elif defined(CV_VERSION_MAJOR) && CV_VERSION_MAJOR==3
+// 	cv::Ptr<FastFeatureDetector> leftFeatureDetector = cv::FastFeatureDetector::create();			 
+// 	cv::Ptr<FastFeatureDetector> rightFeatureDetector = cv::FastFeatureDetector::create();
+// #endif
 
 #ifdef HPTSR_DEBUG
 	ptime lastTime = microsec_clock::local_time();
@@ -127,6 +131,9 @@ void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S){
 		//mark[j].y=correspondences_disparity_original[j][1];
 	}
 
+	// copy census transformation to output
+	census_l = censusLeft;
+	census_r = censusRight;
 
 	// Clean up
 	// delete leftFeatureDetector;

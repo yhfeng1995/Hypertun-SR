@@ -18,9 +18,9 @@ int main() {
 
 	//setting folder paths and choosing all .png files
 	if (DATASET == ACCURACY_DATASET) {
-		path_left = "/home/yonghui/Datasets/kitti_scene_flow/training/image_2/*.png";
-		path_right = "/home/yonghui/Datasets/kitti_scene_flow/training/image_3/*.png";
-		path_disp = "/home/yonghui/Datasets/kitti_scene_flow/training/disp_occ_0/*.png";
+		path_left = "/home/yonghui/Datasets/kitti_stereo2015/training/image_2/*.png";
+		path_right = "/home/yonghui/Datasets/kitti_stereo2015/training/image_3/*.png";
+		path_disp = "/home/yonghui/Datasets/kitti_stereo2015/training/disp_occ_0/*.png";
 	}
 	if (DATASET == PERFORMANCE_DATASET) {
 		path_left = "/home/yonghui/Datasets/kitti_odom/sequences/09/image_2/*.png";

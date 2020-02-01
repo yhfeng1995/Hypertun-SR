@@ -20,12 +20,12 @@ int main(int argc, char **argv)
     }
 
     random_device rd;
-    uniform_real_distribution<float> distrib_x(0, width-1);
-    uniform_real_distribution<float> distrib_y(0, height-1);
+    uniform_real_distribution<double> distrib_x(0, width-1);
+    uniform_real_distribution<double> distrib_y(0, height-1);
 
     triangulateio tri_in, tri_out;
     // in
-    tri_in.pointlist = new float[3*num_vtxs];
+    tri_in.pointlist = new double[3*num_vtxs];
     tri_in.pointattributelist = NULL;
     tri_in.pointmarkerlist = NULL;
     tri_in.numberofpoints = num_vtxs;

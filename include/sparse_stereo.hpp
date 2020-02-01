@@ -17,7 +17,7 @@
 
 namespace Hypertun_SR
 {
-    void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S);
+    void sparse_stereo(cv::Mat I_l, cv::Mat I_r, cv::Mat &S, cv::Mat &census_l, cv::Mat &census_r);
 }
 
 #endif // SPARSE_STEREO_HPP

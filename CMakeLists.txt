@@ -9,6 +9,9 @@ find_package( OpenCV 3 REQUIRED )
 if (OpenCV_FOUND)
 	message(STATUS "OpenCV Version: ${OpenCV_VERSION}")
 endif()
+if (OpenCV_VERSION STRGREATER "3.3.0")
+	add_definitions("-DOPENCV_TRAITS_ENABLE_DEPRECATED")
+endif()
 
 include_directories(
 	${PROJECT_SOURCE_DIR}/include
@@ -17,8 +20,13 @@ include_directories(
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
+# third party libs
+add_subdirectory(ThirdParty/sparsestereo)
+add_subdirectory(ThirdParty/triangulation)
+
 # HPTSR lib
-# add_definitions("-DHPTSR_DEBUG")
+add_definitions("-DHPTSR_DEBUG")
 add_library(${PROJECT_NAME}
 		src/sparse_stereo.cpp
 		src/delaunay_triangulation.cpp
@@ -60,8 +68,5 @@ target_link_libraries(test_triangulation
 		${OpenCV_LIBS}
 		triangulation
 )
-
-add_subdirectory(ThirdParty/sparsestereo)
-add_subdirectory(ThirdParty/triangulation)
 
 

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cassert>
 #include <bitset>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Hypertun_SR
 {
@@ -45,6 +46,11 @@ void cost_evaluation(cv::Mat &I_l, cv::Mat &I_r,
 	cv::Mat_<char> charLeft, charRight;
 	cv::Mat_<unsigned int> censusLeft, censusRight;
 
+	// copy from input
+	// censusLeft = census_l;
+	// censusRight = census_r;
+
+	// boost::posix_time::ptime lastTime = boost::posix_time::microsec_clock::local_time();
 
 	#pragma omp parallel sections default(shared) num_threads(2)
 	{
@@ -84,6 +90,10 @@ void cost_evaluation(cv::Mat &I_l, cv::Mat &I_r,
 			sparsestereo::Census::transform5x5(charRight, &censusRight);
 		}
 	}
+
+	// boost::posix_time::time_duration elapsed = (boost::posix_time::microsec_clock::local_time() - lastTime);
+	// std::cout << std::setw(50) << std::left << "Elapsed Time for 'census transform': " << std::right << elapsed.total_microseconds()/1.0e3 << " ms" << std::endl;
+
 
 
 	// loop over all high gradient pixels
@@ -129,8 +139,8 @@ void cost_evaluation(cv::Mat &I_l, cv::Mat &I_r,
 	}
 
 	// copy census transformed images for output
-	census_l = censusLeft;
-	census_r = censusRight;
+	// census_l = censusLeft;
+	// census_r = censusRight;
 
 }
 
